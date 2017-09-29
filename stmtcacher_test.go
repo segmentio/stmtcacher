@@ -48,27 +48,41 @@ func (db *DBStub) QueryRowContext(ctx context.Context, query string, args ...int
 	return db.QueryRow(query, args...)
 }
 
-func TestStmtCacherPrepare(t *testing.T) {
+func TestCachingProxyPrepare(t *testing.T) {
 	db := &DBStub{}
-	sc := NewStmtCacher(db)
+	proxy := NewCachingProxy(db)
 	query := "SELECT 1"
 
-	sc.Prepare(query)
-	sc.Prepare(query)
+	proxy.Prepare(query)
+	proxy.Prepare(query)
 
 	assert.Equal(t, query, db.LastPrepareSql)
 	assert.Equal(t, 1, db.PrepareCount)
 }
 
-func TestStmtCacherPrepareSqlite(t *testing.T) {
+func TestCachingProxyPrepareSqlite(t *testing.T) {
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
 
-	sc := NewStmtCacher(db)
+	proxy := NewCachingProxy(db)
 	query := "SELECT 1"
 
-	sc.Prepare(query)
+	proxy.Prepare(query)
+}
+
+func TestCachingWrapperPrepareSqlite(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	wrapper := NewCachingWrapper(db)
+	query := "SELECT 1"
+
+	wrapper.PreparedExec(query)
+	wrapper.Exec(query)
 }

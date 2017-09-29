@@ -1,15 +1,12 @@
 # stmtcacher
 
-Prepared statement caching for go. Works as a proxy for sql.DB,
-caching and reusing all prepared statements.
+Prepared statement caching for go's sql.DB.
 
-Simplified and based on:
-https://github.com/Masterminds/squirrel/blob/v1/stmtcacher.go
+## CachingWrapper
 
-Compared to squirrel, this pkg has:
-* Better error handling
-* Doesn't enforce squirrel-specific types like RowScanner
-* Easier use with other pkgs that wrap sql.DB
+Wrapper around DB with additional functions that explicitly reuse cached
+prepared statements. All sql.DB query functions are wrapped and available
+with the prefix "Prepared", e.g. PreparedQuery, PreparedExec
 
 ``` go
 db, err := sql.Open("sqlite3", ":memory:")
@@ -17,26 +14,72 @@ if err != nil {
 	// ...
 }
 
-proxy := stmtcacher.NewStmtCacher(db)
+wrapper := stmtcacher.NewCachingWrapper(db)
 
 query := "SELECT * FROM table where id = ?"
 
 // By default, sql.DB will perform 3 statements and roundtrips
-db.Query(query, 1)
-// PREPARE
-// EXECUTE
-// CLOSE
-db.Query(query, 1)
-// PREPARE
-// EXECUTE
+db.Query(query, "foo")
+// PREPARE 'SELECT * FROM table where name = ?'
+// EXECUTE stmt1, "foo"
+// CLOSE stmt1
+db.Query(query, "bar")
+// PREPARE 'SELECT * FROM table where name = ?'
+// EXECUTE stmt2, "bar"
 // CLOSE
 
-// With stmtcacher, you reuse the statements once prepared
-proxy.Query(query, 1)
-// PREPARE
-// EXECUTE
-proxy.Query(query, 1)
-// EXECUTE
-proxy.Query(query, 1)
-// EXECUTE
+// With stmtcacher, they're cached
+wrapper.PreparedQuery(query, "foo")
+// PREPARE 'SELECT * FROM table where name = ?'
+// EXECUTE stmt1, "foo"
+wrapper.PreparedQuery(query, "bar")
+// EXECUTE stmt1, "bar"
+wrapper.PreparedQuery(query, "baz")
+// EXECUTE stmt1, "baz"
 ```
+
+## CachingProxy
+
+Caching proxy and wrapper around sql.DB. Exec, Query, QueryRow, ExecContext,
+QueryContext, and QueryRowContext are each wrapped to cache and reuse
+prepared statements
+
+``` go
+db, err := sql.Open("sqlite3", ":memory:")
+if err != nil {
+	// ...
+}
+
+proxy := stmtcacher.NewCachingProxy(db)
+
+query := "SELECT * FROM table where name = ?"
+
+// By default, sql.DB will perform 3 statements and roundtrips
+db.Query(query, "foo")
+// PREPARE 'SELECT * FROM table where name = ?'
+// EXECUTE stmt1, "foo"
+// CLOSE stmt1
+db.Query(query, "bar")
+// PREPARE 'SELECT * FROM table where name = ?'
+// EXECUTE stmt2, "bar"
+// CLOSE
+
+// With stmtcacher, they're cached
+proxy.Query(query, "foo")
+// PREPARE 'SELECT * FROM table where name = ?'
+// EXECUTE stmt1, "foo"
+proxy.Query(query, "bar")
+// EXECUTE stmt1, "bar"
+proxy.Query(query, "baz")
+// EXECUTE stmt1, "baz"
+```
+
+#### Comparison
+
+Simplified and inspired by: https://github.com/Masterminds/squirrel
+
+Compared to squirrel, this pkg has:
+* Better error handling
+* Doesn't enforce squirrel-specific types like RowScanner
+* Easier use with other pkgs that wrap sql.DB
+* Offers both a wrapper with additional fns, as well as caching proxy
