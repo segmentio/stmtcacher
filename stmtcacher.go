@@ -6,13 +6,24 @@ import (
 	"sync"
 )
 
+type DB interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	Prepare(query string) (*sql.Stmt, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+}
+
 type StmtCacher struct {
 	cache map[string]*sql.Stmt
 	mu    sync.Mutex
-	*sql.DB
+	DB
 }
 
-func NewStmtCacher(db *sql.DB) *StmtCacher {
+func NewStmtCacher(db DB) *StmtCacher {
 	return &StmtCacher{cache: make(map[string]*sql.Stmt), DB: db}
 }
 
