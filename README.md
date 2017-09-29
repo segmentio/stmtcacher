@@ -38,6 +38,13 @@ wrapper.QueryPrepared(query, "bar")
 // EXECUTE stmt1, "bar"
 wrapper.QueryPrepared(query, "baz")
 // EXECUTE stmt1, "baz"
+
+// sql.DB is embedded and available to
+// easily opt-in or out of the behavior
+wrapper.Query(query, "bar")
+// PREPARE 'SELECT * FROM table where name = ?'
+// EXECUTE stmt2, "bar"
+// CLOSE
 ```
 
 ## CachingProxy
