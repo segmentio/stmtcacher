@@ -76,12 +76,12 @@ proxy.Query(query, "baz")
 // EXECUTE stmt1, "baz"
 ```
 
-#### Comparison
+## Comparison
 
-Simplified and inspired by: https://github.com/Masterminds/squirrel
+Inspired by: https://github.com/Masterminds/squirrel
 
 Compared to squirrel, this pkg has:
 * Better error handling
 * Doesn't enforce squirrel-specific types like RowScanner
-* Easier use with other pkgs that wrap sql.DB
+* Easier use with other pkgs that wrap or work with sql.DB
 * Offers both a wrapper with additional fns, as well as caching proxy
