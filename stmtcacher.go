@@ -20,7 +20,7 @@ type DB interface {
 
 // Wrapper around DB with additional functions that explicitly reuse cached
 // prepared statements. All sql.DB query functions are wrapped and available
-// with the prefix "Prepared", e.g. PreparedQuery, PreparedExec
+// with the suffix "Prepared", e.g. QueryPrepared, ExecPrepared
 type CachingWrapper struct {
 	proxy *CachingProxy
 	DB
@@ -32,33 +32,33 @@ func NewCachingWrapper(db DB) *CachingWrapper {
 	return &CachingWrapper{proxy: proxy, DB: db}
 }
 
-// sql.DB.Exec with caching and resuse of the generated prepared statement
-func (wrapper *CachingWrapper) PreparedExec(query string, args ...interface{}) (res sql.Result, err error) {
+// sql.DB.Exec with caching and reuse of the generated prepared statement
+func (wrapper *CachingWrapper) ExecPrepared(query string, args ...interface{}) (res sql.Result, err error) {
 	return wrapper.proxy.Exec(query, args...)
 }
 
-// sql.DB.Query with caching and resuse of the generated prepared statement
-func (wrapper *CachingWrapper) PreparedQuery(query string, args ...interface{}) (rows *sql.Rows, err error) {
+// sql.DB.Query with caching and reuse of the generated prepared statement
+func (wrapper *CachingWrapper) QueryPrepared(query string, args ...interface{}) (rows *sql.Rows, err error) {
 	return wrapper.proxy.Query(query, args...)
 }
 
-// sql.DB.QueryRow with caching and resuse of the generated prepared statement
-func (wrapper *CachingWrapper) PreparedQueryRow(query string, args ...interface{}) *sql.Row {
+// sql.DB.QueryRow with caching and reuse of the generated prepared statement
+func (wrapper *CachingWrapper) QueryRowPrepared(query string, args ...interface{}) *sql.Row {
 	return wrapper.proxy.QueryRow(query, args...)
 }
 
-// sql.DB.ExecContext with caching and resuse of the generated prepared statement
-func (wrapper *CachingWrapper) PreparedExecContext(ctx context.Context, query string, args ...interface{}) (res sql.Result, err error) {
+// sql.DB.ExecContext with caching and reuse of the generated prepared statement
+func (wrapper *CachingWrapper) ExecContextPrepared(ctx context.Context, query string, args ...interface{}) (res sql.Result, err error) {
 	return wrapper.proxy.ExecContext(ctx, query, args...)
 }
 
-// sql.DB.QueryContext with caching and resuse of the generated prepared statement
-func (wrapper *CachingWrapper) PreparedQueryContext(ctx context.Context, query string, args ...interface{}) (rows *sql.Rows, err error) {
+// sql.DB.QueryContext with caching and reuse of the generated prepared statement
+func (wrapper *CachingWrapper) QueryContextPrepared(ctx context.Context, query string, args ...interface{}) (rows *sql.Rows, err error) {
 	return wrapper.proxy.QueryContext(ctx, query, args...)
 }
 
-// sql.DB.QueryRowContext with caching and resuse of the generated prepared statement
-func (wrapper *CachingWrapper) PreparedQueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+// sql.DB.QueryRowContext with caching and reuse of the generated prepared statement
+func (wrapper *CachingWrapper) QueryRowContextPrepared(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	return wrapper.proxy.QueryRowContext(ctx, query, args...)
 }
 
@@ -92,7 +92,7 @@ func (proxy *CachingProxy) Prepare(query string) (*sql.Stmt, error) {
 	return stmt, nil
 }
 
-// sql.DB.Exec with caching and resuse of the generated prepared statement
+// sql.DB.Exec with caching and reuse of the generated prepared statement
 func (proxy *CachingProxy) Exec(query string, args ...interface{}) (res sql.Result, err error) {
 	stmt, err := proxy.Prepare(query)
 	if err != nil {
@@ -101,7 +101,7 @@ func (proxy *CachingProxy) Exec(query string, args ...interface{}) (res sql.Resu
 	return stmt.Exec(args...)
 }
 
-// sql.DB.Query with caching and resuse of the generated prepared statement
+// sql.DB.Query with caching and reuse of the generated prepared statement
 func (proxy *CachingProxy) Query(query string, args ...interface{}) (rows *sql.Rows, err error) {
 	stmt, err := proxy.Prepare(query)
 	if err != nil {
@@ -110,7 +110,7 @@ func (proxy *CachingProxy) Query(query string, args ...interface{}) (rows *sql.R
 	return stmt.Query(args...)
 }
 
-// sql.DB.QueryRow with caching and resuse of the generated prepared statement
+// sql.DB.QueryRow with caching and reuse of the generated prepared statement
 func (proxy *CachingProxy) QueryRow(query string, args ...interface{}) *sql.Row {
 	stmt, err := proxy.Prepare(query)
 	if err != nil {
@@ -135,7 +135,7 @@ func (proxy *CachingProxy) PrepareContext(ctx context.Context, query string) (*s
 	return stmt, nil
 }
 
-// sql.DB.ExecContext with caching and resuse of the generated prepared statement
+// sql.DB.ExecContext with caching and reuse of the generated prepared statement
 func (proxy *CachingProxy) ExecContext(ctx context.Context, query string, args ...interface{}) (res sql.Result, err error) {
 	stmt, err := proxy.PrepareContext(ctx, query)
 	if err != nil {
@@ -144,7 +144,7 @@ func (proxy *CachingProxy) ExecContext(ctx context.Context, query string, args .
 	return stmt.ExecContext(ctx, args...)
 }
 
-// sql.DB.QueryContext with caching and resuse of the generated prepared statement
+// sql.DB.QueryContext with caching and reuse of the generated prepared statement
 func (proxy *CachingProxy) QueryContext(ctx context.Context, query string, args ...interface{}) (rows *sql.Rows, err error) {
 	stmt, err := proxy.PrepareContext(ctx, query)
 	if err != nil {
@@ -153,7 +153,7 @@ func (proxy *CachingProxy) QueryContext(ctx context.Context, query string, args 
 	return stmt.QueryContext(ctx, args...)
 }
 
-// sql.DB.QueryRowContext with caching and resuse of the generated prepared statement
+// sql.DB.QueryRowContext with caching and reuse of the generated prepared statement
 func (proxy *CachingProxy) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	stmt, err := proxy.PrepareContext(ctx, query)
 	if err != nil {

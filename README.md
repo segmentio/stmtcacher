@@ -8,7 +8,7 @@ Prepared statement caching for go's sql.DB.
 
 Wrapper around DB with additional functions that explicitly reuse cached
 prepared statements. All sql.DB query functions are wrapped and available
-with the prefix "Prepared", e.g. PreparedQuery, PreparedExec
+with the suffix "Prepared", e.g. QueryPrepared, ExecPrepared
 
 ``` go
 db, err := sql.Open("sqlite3", ":memory:")
@@ -31,12 +31,12 @@ db.Query(query, "bar")
 // CLOSE
 
 // With stmtcacher, they're cached
-wrapper.PreparedQuery(query, "foo")
+wrapper.QueryPrepared(query, "foo")
 // PREPARE 'SELECT * FROM table where name = ?'
 // EXECUTE stmt1, "foo"
-wrapper.PreparedQuery(query, "bar")
+wrapper.QueryPrepared(query, "bar")
 // EXECUTE stmt1, "bar"
-wrapper.PreparedQuery(query, "baz")
+wrapper.QueryPrepared(query, "baz")
 // EXECUTE stmt1, "baz"
 ```
 

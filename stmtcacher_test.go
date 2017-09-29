@@ -83,6 +83,6 @@ func TestCachingWrapperPrepareSqlite(t *testing.T) {
 	wrapper := NewCachingWrapper(db)
 	query := "SELECT 1"
 
-	wrapper.PreparedExec(query)
+	wrapper.ExecPrepared(query)
 	wrapper.Exec(query)
 }
