@@ -6,28 +6,16 @@ import (
 	"sync"
 )
 
-// Interface consisting of the necessary subset of sql.DB functions required for the wrapper and proxy
-type DB interface {
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	Prepare(query string) (*sql.Stmt, error)
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	QueryRow(query string, args ...interface{}) *sql.Row
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
-}
-
 // Wrapper around DB with additional functions that explicitly reuse cached
 // prepared statements. All sql.DB query functions are wrapped and available
 // with the suffix "Prepared", e.g. QueryPrepared, ExecPrepared
 type CachingWrapper struct {
 	proxy *CachingProxy
-	DB
+	*sql.DB
 }
 
 // Returns a CachingWrapper
-func NewCachingWrapper(db DB) *CachingWrapper {
+func NewCachingWrapper(db *sql.DB) *CachingWrapper {
 	proxy := NewCachingProxy(db)
 	return &CachingWrapper{proxy: proxy, DB: db}
 }
@@ -68,11 +56,11 @@ func (wrapper *CachingWrapper) QueryRowContextPrepared(ctx context.Context, quer
 type CachingProxy struct {
 	cache map[string]*sql.Stmt
 	mu    sync.Mutex
-	DB
+	*sql.DB
 }
 
 // Returns a CachingProxy
-func NewCachingProxy(db DB) *CachingProxy {
+func NewCachingProxy(db *sql.DB) *CachingProxy {
 	return &CachingProxy{cache: make(map[string]*sql.Stmt), DB: db}
 }
 
