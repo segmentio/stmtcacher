@@ -2,6 +2,8 @@
 
 Prepared statement caching for go's sql.DB.
 
+[![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/segmentio/stmtcacher)
+
 ## CachingWrapper
 
 Wrapper around DB with additional functions that explicitly reuse cached
